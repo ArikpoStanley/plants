@@ -154,12 +154,14 @@ export default function IdentificationWizard() {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [aiResult, setAiResult] = useState<any | null>(null);
   const [classifying, setClassifying] = useState(false);
+  const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
 
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedImageName(file.name);
       setUploading(true);
       try {
         const url = await uploadImage(file);
@@ -195,7 +197,7 @@ export default function IdentificationWizard() {
     <div style={cardStyle} aria-live="polite">
       <div style={stepStyle}>Upload a photo of the leaf or bark:</div>
       <label
-        htmlFor="plant-upload"
+        htmlFor="identify-image-upload"
         style={{
           display: 'inline-block',
           background: 'linear-gradient(90deg, #4299e1 0%, #90cdf4 100%)',
@@ -219,7 +221,7 @@ export default function IdentificationWizard() {
         {uploading ? 'Uploading...' : 'Choose Image'}
       </label>
       <input
-        id="plant-upload"
+        id="identify-image-upload"
         type="file"
         accept="image/*"
         ref={fileInputRef}
@@ -227,6 +229,7 @@ export default function IdentificationWizard() {
         style={{ display: 'none' }}
         aria-label="Upload image"
       />
+      {selectedImageName && <div style={{ color: '#225ea8', marginBottom: 8, fontSize: '0.98rem' }}>Selected: {selectedImageName}</div>}
       {imageUrl && <img src={imageUrl} alt="Uploaded preview" style={{ maxWidth: 180, borderRadius: 12, marginBottom: 16, marginTop: 8 }} />}
       {classifying && <div style={{ color: '#3182ce', marginBottom: 8 }}>Classifying image...</div>}
       {aiResult && (

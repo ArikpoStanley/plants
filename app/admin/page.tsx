@@ -71,6 +71,7 @@ export default function AdminPage() {
     image_url: "",
   });
   const [uploading, setUploading] = useState(false);
+  const [selectedImageName, setSelectedImageName] = useState<string | null>(null);
 
   useEffect(() => {
     if (loggedIn) fetchSpecies();
@@ -103,6 +104,7 @@ export default function AdminPage() {
   const handleImageFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      setSelectedImageName(file.name);
       setUploading(true);
       try {
         const url = await uploadImage(file);
@@ -207,15 +209,42 @@ export default function AdminPage() {
           onChange={handleFormChange}
           style={inputStyle}
         />
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', marginBottom: 16 }}>
+          <label
+            htmlFor="admin-image-upload"
+            style={{
+              background: 'linear-gradient(90deg, #4299e1 0%, #90cdf4 100%)',
+              color: '#fff',
+              padding: '0.85rem 2rem',
+              borderRadius: '0.7rem',
+              fontWeight: 600,
+              fontSize: '1.08rem',
+              cursor: 'pointer',
+              boxShadow: '0 2px 8px rgba(66, 153, 225, 0.08)',
+              border: 'none',
+              transition: 'background 0.2s, transform 0.1s',
+              margin: 0
+            }}
+            tabIndex={0}
+            onKeyDown={e => {
+              if (e.key === 'Enter' || e.key === ' ') document.getElementById('admin-image-upload')?.click();
+            }}
+          >
+            {uploading ? 'Uploading...' : 'Choose Image'}
+          </label>
+          <button type="submit" style={{ ...btnStyle, margin: 0 }}>Add Species</button>
+        </div>
         <input
+          id="admin-image-upload"
           type="file"
           accept="image/*"
           onChange={handleImageFile}
-          style={{ marginBottom: 16 }}
+          style={{ display: 'none' }}
+          aria-label="Upload image"
         />
+        {selectedImageName && <div style={{ color: '#225ea8', marginBottom: 8, fontSize: '0.98rem' }}>Selected: {selectedImageName}</div>}
         {uploading && <div style={{ color: '#3182ce', marginBottom: 8 }}>Uploading...</div>}
-        {form.image_url && <img src={form.image_url} alt="Preview" style={{ maxWidth: 120, borderRadius: 8, marginBottom: 8 }} />}
-        <button type="submit" style={btnStyle}>Add Species</button>
+        {form.image_url && <img src={form.image_url} alt="Preview" style={{ width: '100%', maxWidth: 240, borderRadius: 8, marginBottom: 12, marginTop: 8, objectFit: 'cover', display: 'block' }} />}
       </form>
       {error && <div style={errorStyle}>{error}</div>}
       <div style={{ width: '100%', marginTop: 24 }}>
