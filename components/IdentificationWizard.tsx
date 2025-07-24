@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { uploadImage, classifyImage, PlantNetResult } from '../lib/api';
 
 interface HistoryItem extends PlantNetResult {
@@ -55,7 +56,7 @@ export default function IdentificationWizard() {
       };
 
       const existingHistory = localStorage.getItem('plantIdentificationHistory');
-      const history = existingHistory ? JSON.parse(existingHistory) : [];
+      const history: HistoryItem[] = existingHistory ? JSON.parse(existingHistory) : [];
       history.unshift(historyItem);
       
       // Keep only last 50 items
@@ -76,13 +77,13 @@ export default function IdentificationWizard() {
   const handleAddToCollection = () => {
     if (!result) return;
     const collectionsRaw = localStorage.getItem('plantCollections');
-    let collections = collectionsRaw ? JSON.parse(collectionsRaw) : [];
+    const collections: HistoryItem[] = collectionsRaw ? JSON.parse(collectionsRaw) : [];
     // Prevent duplicates by scientific name
-    if (collections.some((item: any) => item.scientific_name === result.scientific_name)) {
+    if (collections.some((item) => item.scientific_name === result.scientific_name)) {
       setCollectionMessage('This species is already in your collection.');
       return;
     }
-    collections.unshift({ ...result, imageUrl: previewUrl });
+    collections.unshift({ ...result, imageUrl: previewUrl || '', timestamp: new Date().toISOString() });
     localStorage.setItem('plantCollections', JSON.stringify(collections));
     setCollectionMessage('Added to your collection!');
   };
@@ -138,9 +139,11 @@ export default function IdentificationWizard() {
           </div>
           {previewUrl && (
             <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-              <img
+              <Image
                 src={previewUrl}
                 alt="Preview"
+                width={240}
+                height={240}
                 style={{ maxWidth: '100%', maxHeight: 240, borderRadius: 8, boxShadow: '0 2px 8px rgba(30, 64, 175, 0.10)' }}
               />
             </div>

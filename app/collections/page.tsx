@@ -2,6 +2,15 @@
 import React, { useEffect, useState } from "react";
 import Image from "next/image";
 
+interface ReferenceImage {
+  url: {
+    o: string;
+    m: string;
+    s: string;
+  };
+  organ: string;
+}
+
 interface CollectionItem {
   scientific_name: string;
   confidence: number;
@@ -10,7 +19,7 @@ interface CollectionItem {
   genus: string;
   synonyms: string[];
   vernacular_names: string[];
-  reference_images: any[];
+  reference_images: ReferenceImage[];
   imageUrl?: string;
 }
 
