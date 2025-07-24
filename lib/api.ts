@@ -10,15 +10,33 @@ export type IdentificationResult = {
   candidates: string[];
 };
 
-export type Species = {
-  id?: string;
+export interface Species {
+  _id: string;
   name: string;
   leaf_shape?: string;
   bark_texture?: string;
   fruit_type?: string;
   growth_habit?: string;
   image_url?: string;
-};
+}
+
+export interface PlantNetResult {
+  scientific_name: string;
+  confidence: number;
+  common_names: string[];
+  family: string;
+  genus: string;
+  synonyms: string[];
+  vernacular_names: string[];
+  reference_images: Array<{
+    url: {
+      o: string;
+      m: string;
+      s: string;
+    };
+    organ: string;
+  }>;
+}
 
 export async function fetchQuestions(): Promise<Question[]> {
   const res = await fetch(`/api/questions`);
@@ -37,63 +55,91 @@ export async function identifyTree(answers: Record<string, string>): Promise<Ide
 }
 
 export async function getSpeciesList(): Promise<Species[]> {
-  const res = await fetch(`/api/species`);
-  if (!res.ok) throw new Error('Failed to fetch species');
-  return res.json();
+  const response = await fetch('/api/species');
+  if (!response.ok) {
+    throw new Error('Failed to fetch species from backend');
+  }
+  return response.json();
 }
 
 export async function getSpecies(id: string): Promise<Species> {
-  const res = await fetch(`/api/species/${id}`);
-  if (!res.ok) throw new Error('Failed to fetch species');
-  return res.json();
+  const response = await fetch(`/api/species/${id}`);
+  if (!response.ok) {
+    throw new Error('Failed to fetch species');
+  }
+  return response.json();
 }
 
-export async function createSpecies(data: Species): Promise<Species> {
-  const res = await fetch(`/api/species`, {
+export async function createSpecies(speciesData: Omit<Species, '_id'>): Promise<Species> {
+  const response = await fetch('/api/species', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(speciesData),
   });
-  if (!res.ok) throw new Error('Failed to create species');
-  return res.json();
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to create species');
+  }
+  return response.json();
 }
 
-export async function updateSpecies(id: string, data: Species): Promise<Species> {
-  const res = await fetch(`/api/species/${id}`, {
+export async function updateSpecies(id: string, speciesData: Partial<Species>): Promise<Species> {
+  const response = await fetch(`/api/species/${id}`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(speciesData),
   });
-  if (!res.ok) throw new Error('Failed to update species');
-  return res.json();
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to update species');
+  }
+  return response.json();
 }
 
 export async function deleteSpecies(id: string): Promise<void> {
-  const res = await fetch(`/api/species/${id}`, {
+  const response = await fetch(`/api/species/${id}`, {
     method: 'DELETE',
   });
-  if (!res.ok) throw new Error('Failed to delete species');
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to delete species');
+  }
 }
 
-export async function uploadImage(file: File): Promise<string> {
+export async function uploadImage(file: File): Promise<{ url: string; public_id: string }> {
   const formData = new FormData();
   formData.append('file', file);
-  const res = await fetch(`/api/upload-image`, {
+
+  const response = await fetch('/api/upload-image', {
     method: 'POST',
     body: formData,
   });
-  if (!res.ok) throw new Error('Failed to upload image');
-  const data = await res.json();
-  return data.url;
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to upload image');
+  }
+
+  return response.json();
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export async function classifyImage(imageUrl: string): Promise<any> {
-  const res = await fetch(`/api/classify-image`, {
+export async function classifyImage(imageUrl: string): Promise<PlantNetResult> {
+  const response = await fetch('/api/classify-image', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+    },
     body: JSON.stringify({ image_url: imageUrl }),
   });
-  if (!res.ok) throw new Error('Failed to classify image');
-  return res.json();
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to classify image');
+  }
+
+  return response.json();
 } 

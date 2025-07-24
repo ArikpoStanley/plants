@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from 'cloudinary';
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { IncomingForm, Fields, Files } from 'formidable';
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -13,15 +14,12 @@ export const config = {
   },
 };
 
-function parseForm(req: NextApiRequest): Promise<{ fields: any; files: any }> {
+function parseForm(req: NextApiRequest): Promise<{ fields: Fields; files: Files }> {
   return new Promise((resolve, reject) => {
-    import('formidable').then(({ IncomingForm }) => {
-      const form = new IncomingForm();
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      form.parse(req, (err: any, fields: any, files: any) => {
-        if (err) reject(err);
-        else resolve({ fields, files });
-      });
+    const form = new IncomingForm();
+    form.parse(req, (err, fields, files) => {
+      if (err) reject(err);
+      else resolve({ fields, files });
     });
   });
 }
@@ -32,17 +30,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
   try {
     const { files } = await parseForm(req);
-    let file = files.file;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if (Array.isArray(file)) file = file[0];
+    const file = files.file;
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const result = await cloudinary.uploader.upload((file as any).filepath, {
+    
+    // Handle both single file and array of files
+    const fileToUpload = Array.isArray(file) ? file[0] : file;
+    if (!fileToUpload) return res.status(400).json({ error: 'No file uploaded' });
+    
+    const result = await cloudinary.uploader.upload(fileToUpload.filepath, {
       folder: 'plant-identification',
     });
     return res.status(200).json({ url: result.secure_url, public_id: result.public_id });
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: 'Image upload failed' });
   }
 } 

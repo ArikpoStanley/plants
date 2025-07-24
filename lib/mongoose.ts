@@ -6,12 +6,19 @@ if (!MONGO_URL) {
   throw new Error('Please define the MONGO_URL environment variable inside .env.local');
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-let cached = (global as any).mongoose;
+interface Cached {
+  conn: typeof mongoose | null;
+  promise: Promise<typeof mongoose> | null;
+}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+declare global {
+  var mongoose: Cached | undefined;
+}
+
+let cached: Cached = global.mongoose || { conn: null, promise: null };
+
 if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null };
+  cached = global.mongoose = { conn: null, promise: null };
 }
 
 async function dbConnect() {

@@ -10,7 +10,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const species = await Species.findById(id);
       if (!species) return res.status(404).json({ error: 'Species not found' });
       res.status(200).json(species);
-    } catch (err) {
+    } catch {
       res.status(500).json({ error: 'Failed to fetch species' });
     }
   } else if (req.method === 'PUT') {
@@ -18,16 +18,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const updated = await Species.findByIdAndUpdate(id, req.body, { new: true });
       if (!updated) return res.status(404).json({ error: 'Species not found' });
       res.status(200).json(updated);
-    } catch (err: any) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      res.status(400).json({ error: (err as any).message || 'Failed to update species' });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update species';
+      res.status(400).json({ error: errorMessage });
     }
   } else if (req.method === 'DELETE') {
     try {
       const deleted = await Species.findByIdAndDelete(id);
       if (!deleted) return res.status(404).json({ error: 'Species not found' });
       res.status(200).json({ message: 'Species deleted' });
-    } catch (err) {
+    } catch {
       res.status(500).json({ error: 'Failed to delete species' });
     }
   } else {

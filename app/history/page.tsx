@@ -1,109 +1,211 @@
-"use client";
-import React, { useEffect, useState } from "react";
+'use client';
 
-const cardStyle: React.CSSProperties = {
-  background: '#fff',
-  borderRadius: '1.25rem',
-  boxShadow: '0 4px 32px rgba(30, 64, 175, 0.10)',
-  padding: '2rem 2rem 1.5rem 2rem',
-  maxWidth: '100%',
-  margin: '2rem auto 0 auto',
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  transition: 'box-shadow 0.2s',
-};
+import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
+import { PlantNetResult } from '../../lib/api';
 
-const titleStyle: React.CSSProperties = {
-  fontSize: '2rem',
-  fontWeight: 700,
-  color: '#1a365d',
-  marginBottom: '1.5rem',
-  textAlign: 'center',
-};
-
-const historyListStyle: React.CSSProperties = {
-  width: '100%',
-  display: 'grid',
-  gridTemplateColumns: 'repeat(2, 1fr)',
-  gap: '1.5rem',
-};
-
-const historyItemStyle: React.CSSProperties = {
-  background: '#f4f8fb',
-  borderRadius: '0.7rem',
-  padding: '1rem',
-  boxShadow: '0 1px 6px rgba(30,64,175,0.07)',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.5rem',
-};
+interface HistoryItem extends PlantNetResult {
+  timestamp: string;
+  imageUrl: string;
+}
 
 export default function HistoryPage() {
-  const [history, setHistory] = useState<any[]>([]);
+  const [history, setHistory] = useState<HistoryItem[]>([]);
 
   useEffect(() => {
-    const data = localStorage.getItem('tree-identification-history');
-    if (data) setHistory(JSON.parse(data));
+    const savedHistory = localStorage.getItem('plantIdentificationHistory');
+    if (savedHistory) {
+      try {
+        const parsedHistory = JSON.parse(savedHistory) as HistoryItem[];
+        setHistory(parsedHistory);
+      } catch (error) {
+        console.error('Failed to parse history:', error);
+      }
+    }
   }, []);
 
+  const formatDate = (timestamp: string) => {
+    return new Date(timestamp).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  if (history.length === 0) {
+    return (
+      <div style={{ 
+        minHeight: '100vh', 
+        background: '#f4f8fb', 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        padding: '2rem 1rem' 
+      }}>
+        <div style={{ 
+          maxWidth: '800px', 
+          width: '100%', 
+          textAlign: 'center',
+          background: 'white',
+          padding: '3rem',
+          borderRadius: '12px',
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+        }}>
+          <h1 style={{ 
+            fontSize: '2.5rem', 
+            fontWeight: 800, 
+            color: '#1a365d', 
+            marginBottom: '1rem' 
+          }}>
+            Identification History
+          </h1>
+          <p style={{ 
+            fontSize: '1.2rem', 
+            color: '#4a5568', 
+            marginBottom: '2rem' 
+          }}>
+            No identification history found. Start by identifying some plants!
+          </p>
+          <a 
+            href="/identify" 
+            style={{
+              display: 'inline-block',
+              backgroundColor: '#4299e1',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              borderRadius: '8px',
+              textDecoration: 'none',
+              fontWeight: 600,
+              transition: 'background-color 0.2s ease'
+            }}
+          >
+            Start Identifying
+          </a>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <>
-      <style>{`
-        @media (min-width: 640px) {
-          .history-list-grid {
-            grid-template-columns: repeat(3, 1fr) !important;
-          }
-        }
-        @media (min-width: 1024px) {
-          .history-list-grid {
-            grid-template-columns: repeat(5, 1fr) !important;
-          }
-        }
-      `}</style>
-      <div style={cardStyle}>
-        <div style={titleStyle}>Identification History</div>
-        <div style={{ ...historyListStyle }} className="history-list-grid">
-          {history.length === 0 ? (
-            <div style={{ color: '#888', textAlign: 'center' }}>No history yet.</div>
-          ) : (
-            history.map((item, idx) => (
-              <div key={idx} style={historyItemStyle}>
-                <div><b>Date:</b> {item.date}</div>
-                <div><b>Scientific Name:</b> {item.class || 'Unknown'}</div>
-                <div><b>Confidence:</b> {item.confidence !== undefined ? (item.confidence * 100).toFixed(1) + '%' : 'N/A'}</div>
-                {item.common_names && item.common_names.length > 0 && (
-                  <div><b>Common Names:</b> {item.common_names.join(', ')}</div>
+    <div style={{ 
+      minHeight: '100vh', 
+      background: '#f4f8fb', 
+      padding: '2rem 1rem' 
+    }}>
+      <div style={{ 
+        maxWidth: '1200px', 
+        margin: '0 auto' 
+      }}>
+        <h1 style={{ 
+          fontSize: '2.5rem', 
+          fontWeight: 800, 
+          color: '#1a365d', 
+          marginBottom: '2rem',
+          textAlign: 'center'
+        }}>
+          Identification History
+        </h1>
+        
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
+          gap: '1.5rem',
+          padding: '0 1rem'
+        }}>
+          {history.map((item, index) => (
+            <div key={index} style={{
+              background: 'white',
+              borderRadius: '12px',
+              padding: '1.5rem',
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+              border: '1px solid #e2e8f0'
+            }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <Image 
+                  src={item.imageUrl} 
+                  alt="Plant" 
+                  width={400}
+                  height={200}
+                  style={{
+                    width: '100%',
+                    height: '200px',
+                    objectFit: 'cover',
+                    borderRadius: '8px',
+                    marginBottom: '1rem'
+                  }}
+                />
+                <p style={{ 
+                  color: '#718096', 
+                  fontSize: '0.875rem',
+                  margin: 0
+                }}>
+                  {formatDate(item.timestamp)}
+                </p>
+              </div>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div>
+                  <strong style={{ color: '#4a5568' }}>Scientific Name:</strong>
+                  <span style={{ marginLeft: '0.5rem', color: '#2d3748' }}>
+                    {item.scientific_name}
+                  </span>
+                </div>
+                
+                <div>
+                  <strong style={{ color: '#4a5568' }}>Confidence:</strong>
+                  <span style={{ marginLeft: '0.5rem', color: '#2d3748' }}>
+                    {(item.confidence * 100).toFixed(1)}%
+                  </span>
+                </div>
+                
+                {item.common_names.length > 0 && (
+                  <div>
+                    <strong style={{ color: '#4a5568' }}>Common Names:</strong>
+                    <span style={{ marginLeft: '0.5rem', color: '#2d3748' }}>
+                      {item.common_names.join(', ')}
+                    </span>
+                  </div>
                 )}
-                {item.family && (
-                  <div><b>Family:</b> {item.family}</div>
+                
+                <div>
+                  <strong style={{ color: '#4a5568' }}>Family:</strong>
+                  <span style={{ marginLeft: '0.5rem', color: '#2d3748' }}>
+                    {item.family}
+                  </span>
+                </div>
+                
+                <div>
+                  <strong style={{ color: '#4a5568' }}>Genus:</strong>
+                  <span style={{ marginLeft: '0.5rem', color: '#2d3748' }}>
+                    {item.genus}
+                  </span>
+                </div>
+                
+                {item.synonyms.length > 0 && (
+                  <div>
+                    <strong style={{ color: '#4a5568' }}>Synonyms:</strong>
+                    <span style={{ marginLeft: '0.5rem', color: '#2d3748' }}>
+                      {item.synonyms.join(', ')}
+                    </span>
+                  </div>
                 )}
-                {item.genus && (
-                  <div><b>Genus:</b> {item.genus}</div>
-                )}
-                {item.synonyms && item.synonyms.length > 0 && (
-                  <div><b>Synonyms:</b> {item.synonyms.join(', ')}</div>
-                )}
-                {item.vernacular_names && item.vernacular_names.length > 0 && (
-                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                  <div><b>Vernacular Names:</b> {item.vernacular_names.map((v: any) => v.name).join(', ')}</div>
-                )}
-                {item.image && <img src={item.image} alt="Uploaded" style={{ maxWidth: 120, borderRadius: 8, marginTop: 8 }} />}
-                {item.images && item.images.length > 0 && (
-                  <div style={{ marginTop: 8 }}>
-                    <b>Reference Images:</b>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 4 }}>
-                      {item.images.map((img: string, i: number) => (
-                        <img key={i} src={img} alt="Reference" style={{ maxWidth: 60, borderRadius: 6 }} />
-                      ))}
-                    </div>
+                
+                {item.vernacular_names.length > 0 && (
+                  <div>
+                    <strong style={{ color: '#4a5568' }}>Vernacular Names:</strong>
+                    <span style={{ marginLeft: '0.5rem', color: '#2d3748' }}>
+                      {item.vernacular_names.join(', ')}
+                    </span>
                   </div>
                 )}
               </div>
-            ))
-          )}
+            </div>
+          ))}
         </div>
       </div>
-    </>
+    </div>
   );
 } 

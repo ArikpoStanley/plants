@@ -8,17 +8,16 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     try {
       const species = await Species.find({}).sort({ name: 1 });
       res.status(200).json(species);
-    } catch (err) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } catch {
       res.status(500).json({ error: 'Failed to fetch species' });
     }
   } else if (req.method === 'POST') {
     try {
       const species = await Species.create(req.body);
       res.status(201).json(species);
-    } catch (err) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      res.status(400).json({ error: (err as any).message || 'Failed to create species' });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create species';
+      res.status(400).json({ error: errorMessage });
     }
   } else {
     res.setHeader('Allow', ['GET', 'POST']);

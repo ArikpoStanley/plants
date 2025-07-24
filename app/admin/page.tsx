@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useEffect, ChangeEvent } from "react";
+import Image from "next/image";
 import { getSpeciesList, createSpecies, deleteSpecies, uploadImage, Species } from "../../lib/api";
 
 const ADMIN_PASSWORD = "treeadmin123";
@@ -45,24 +46,22 @@ const errorStyle: React.CSSProperties = {
   margin: '1rem 0',
   textAlign: 'center',
 };
-const speciesCardStyle: React.CSSProperties = {
-  background: '#f4f8fb',
-  borderRadius: '0.7rem',
-  padding: '1rem',
-  boxShadow: '0 1px 6px rgba(30,64,175,0.07)',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: '0.5rem',
-  marginBottom: '1rem',
-  width: '100%',
-};
+
+interface SpeciesForm {
+  name: string;
+  leaf_shape: string;
+  bark_texture: string;
+  fruit_type: string;
+  growth_habit: string;
+  image_url: string;
+}
 
 export default function AdminPage() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [species, setSpecies] = useState<Species[]>([]);
-  const [form, setForm] = useState<Species>({
+  const [form, setForm] = useState<SpeciesForm>({
     name: "",
     leaf_shape: "",
     bark_texture: "",
@@ -75,7 +74,6 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (loggedIn) fetchSpecies();
-    // eslint-disable-next-line
   }, [loggedIn]);
 
   const fetchSpecies = async () => {
@@ -107,8 +105,8 @@ export default function AdminPage() {
       setSelectedImageName(file.name);
       setUploading(true);
       try {
-        const url = await uploadImage(file);
-        setForm(f => ({ ...f, image_url: url }));
+        const uploadResult = await uploadImage(file);
+        setForm(f => ({ ...f, image_url: uploadResult.url }));
         setError(null);
       } catch {
         setError("Image upload failed");
@@ -244,7 +242,7 @@ export default function AdminPage() {
         />
         {selectedImageName && <div style={{ color: '#225ea8', marginBottom: 8, fontSize: '0.98rem' }}>Selected: {selectedImageName}</div>}
         {uploading && <div style={{ color: '#3182ce', marginBottom: 8 }}>Uploading...</div>}
-        {form.image_url && <img src={form.image_url} alt="Preview" style={{ width: '100%', maxWidth: 240, borderRadius: 8, marginBottom: 12, marginTop: 8, objectFit: 'cover', display: 'block' }} />}
+        {form.image_url && <Image src={form.image_url} alt="Preview" width={240} height={240} style={{ width: '100%', maxWidth: 240, borderRadius: 8, marginBottom: 12, marginTop: 8, objectFit: 'cover', display: 'block' }} />}
       </form>
       {error && <div style={errorStyle}>{error}</div>}
       <div style={{ width: '100%', marginTop: 24 }}>
@@ -267,17 +265,17 @@ export default function AdminPage() {
               </thead>
               <tbody>
                 {species.map((sp, idx) => (
-                  <tr key={sp.id || idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                  <tr key={sp._id || idx} style={{ borderBottom: '1px solid #e2e8f0' }}>
                     <td style={{ padding: '0.7rem' }}>{sp.name}</td>
                     <td style={{ padding: '0.7rem' }}>{sp.leaf_shape}</td>
                     <td style={{ padding: '0.7rem' }}>{sp.bark_texture}</td>
                     <td style={{ padding: '0.7rem' }}>{sp.fruit_type}</td>
                     <td style={{ padding: '0.7rem' }}>{sp.growth_habit}</td>
                     <td style={{ padding: '0.7rem' }}>
-                      {sp.image_url && <img src={sp.image_url} alt="Species" style={{ maxWidth: 60, borderRadius: 6 }} />}
+                      {sp.image_url && <Image src={sp.image_url} alt="Species" width={60} height={60} style={{ maxWidth: 60, borderRadius: 6 }} />}
                     </td>
                     <td style={{ padding: '0.7rem' }}>
-                      <button onClick={() => handleDelete(String(sp.id))} style={{ ...btnStyle, background: '#e53e3e', color: '#fff', margin: 0, padding: '0.5rem 1rem' }}>Delete</button>
+                      <button onClick={() => handleDelete(sp._id)} style={{ ...btnStyle, background: '#e53e3e', color: '#fff', margin: 0, padding: '0.5rem 1rem' }}>Delete</button>
                     </td>
                   </tr>
                 ))}

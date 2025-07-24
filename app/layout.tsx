@@ -1,59 +1,85 @@
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import "./globals.css";
 
-const navStyle: React.CSSProperties = {
-  width: '100%',
-  background: '#fff',
-  boxShadow: '0 2px 12px rgba(30,64,175,0.07)',
-  padding: '0.5rem 0',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  gap: '2.5rem',
-  position: 'sticky',
-  top: 0,
-  zIndex: 10,
-};
-const linkStyle: React.CSSProperties = {
-  color: '#2b6cb0',
-  fontWeight: 600,
-  fontSize: '1.08rem',
-  textDecoration: 'none',
-  padding: '0.5rem 1rem',
-  borderRadius: '0.5rem',
-  transition: 'background 0.2s, color 0.2s',
-};
-const activeLinkStyle: React.CSSProperties = {
-  background: 'linear-gradient(90deg, #4299e1 0%, #90cdf4 100%)',
-  color: '#fff',
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "Tree Identification Expert System",
+  description: "AI-powered plant and tree identification system",
 };
 
-function NavBar() {
-  const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
-  return (
-    <nav style={navStyle}>
-      <Link href="/" style={{ ...linkStyle, ...(pathname === '/' ? activeLinkStyle : {}) }}>Home</Link>
-      <Link href="/identify" style={{ ...linkStyle, ...(pathname === '/identify' ? activeLinkStyle : {}) }}>Identify</Link>
-      <Link href="/history" style={{ ...linkStyle, ...(pathname === '/history' ? activeLinkStyle : {}) }}>History</Link>
-      <Link href="/admin" style={{ ...linkStyle, ...(pathname === '/admin' ? activeLinkStyle : {}) }}>Admin</Link>
-    </nav>
-  );
-}
-
-export const metadata = {
-  title: 'Tree Species Expert System',
-  description: 'Identify tree species by answering a few questions about their physical characteristics. Powered by AI and expert knowledge.',
-};
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body style={{ margin: 0, padding: 0, background: '#f4f8fb', width: '100vw', minHeight: '100vh', boxSizing: 'border-box' }}>
-        <NavBar />
-        <div style={{ width: '100vw', minHeight: '100vh', boxSizing: 'border-box' }}>
-        {children}
-        </div>
+      <body className={inter.className}>
+        <nav style={{
+          background: 'linear-gradient(90deg, #1e40af 0%, #3b82f6 100%)',
+          padding: '1rem 2rem',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          position: 'sticky',
+          top: 0,
+          zIndex: 1000
+        }}>
+          <div style={{
+            maxWidth: '1200px',
+            margin: '0 auto',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <Link href="/" style={{
+              color: 'white',
+              textDecoration: 'none',
+              fontSize: '1.5rem',
+              fontWeight: 'bold'
+            }}>
+              🌳 Tree ID Expert
+            </Link>
+            <div style={{ display: 'flex', gap: '2rem' }}>
+              <Link href="/" style={{
+                color: 'white',
+                textDecoration: 'none',
+                fontWeight: '500',
+                transition: 'opacity 0.2s'
+              }}>
+                Home
+              </Link>
+              <Link href="/identify" style={{
+                color: 'white',
+                textDecoration: 'none',
+                fontWeight: '500',
+                transition: 'opacity 0.2s'
+              }}>
+                Identify
+              </Link>
+              <Link href="/history" style={{
+                color: 'white',
+                textDecoration: 'none',
+                fontWeight: '500',
+                transition: 'opacity 0.2s'
+              }}>
+                History
+              </Link>
+              <Link href="/admin" style={{
+                color: 'white',
+                textDecoration: 'none',
+                fontWeight: '500',
+                transition: 'opacity 0.2s'
+              }}>
+                Admin
+              </Link>
+            </div>
+          </div>
+        </nav>
+        <main style={{ width: '100vw', minHeight: '100vh' }}>
+          {children}
+        </main>
       </body>
     </html>
   );
