@@ -243,7 +243,7 @@ export default function AdminPage() {
         {selectedImageName && <div style={{ color: '#225ea8', marginBottom: 8, fontSize: '0.98rem' }}>Selected: {selectedImageName}</div>}
         {uploading && <div style={{ color: '#3182ce', marginBottom: 8 }}>Uploading...</div>}
         {/^(https?:)?\/\//.test(form.image_url || '') && (
-          <Image src={form.image_url!} alt="Preview" width={240} height={240} style={{ width: '100%', maxWidth: 240, borderRadius: 8, marginBottom: 12, marginTop: 8, objectFit: 'cover', display: 'block' }} />
+          <Image src={form.image_url!} alt="Preview" width={240} height={240} style={{ width: '100%', maxWidth: 240, borderRadius: 8, marginBottom: 12, marginTop: 8, objectFit: 'contain', display: 'block' }} />
         )}
       </form>
       {error && <div style={errorStyle}>{error}</div>}

@@ -50,7 +50,7 @@ export default function CollectionsPage() {
             {collections.map((item, idx) => (
               <div key={item.scientific_name + idx} style={{ background: 'white', borderRadius: '12px', padding: '1.5rem', boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', border: '1px solid #e2e8f0', position: 'relative' }}>
                 {item.imageUrl && (
-                  <Image src={item.imageUrl} alt={item.scientific_name} width={400} height={200} style={{ width: '100%', height: '200px', objectFit: 'cover', borderRadius: '8px', marginBottom: '1rem' }} />
+                  <Image src={item.imageUrl} alt={item.scientific_name} width={400} height={200} style={{ width: '100%', height: '200px', objectFit: 'contain', borderRadius: '8px', marginBottom: '1rem' }} />
                 )}
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   <div>

@@ -16,6 +16,7 @@ export default function IdentificationWizard() {
   const [result, setResult] = useState<PlantNetResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [collectionMessage, setCollectionMessage] = useState<string | null>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -23,9 +24,8 @@ export default function IdentificationWizard() {
       setSelectedFile(file);
       setError(null);
       setResult(null);
-      // Create a preview URL
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
+      setPreviewUrl(URL.createObjectURL(file));
+      setUploadedImageUrl(null); // Reset uploaded image URL on new file
     }
   };
 
@@ -42,30 +42,23 @@ export default function IdentificationWizard() {
     try {
       // Upload image to Cloudinary
       const uploadResult = await uploadImage(selectedFile);
-      
+      setUploadedImageUrl(uploadResult.url); // Save uploaded image URL
       // Classify image using PlantNet
       const classificationResult = await classifyImage(uploadResult.url);
-      
       setResult(classificationResult);
-
       // Save to localStorage for history
       const historyItem: HistoryItem = {
         ...classificationResult,
         timestamp: new Date().toISOString(),
         imageUrl: uploadResult.url
       };
-
       const existingHistory = localStorage.getItem('plantIdentificationHistory');
       const history: HistoryItem[] = existingHistory ? JSON.parse(existingHistory) : [];
       history.unshift(historyItem);
-      
-      // Keep only last 50 items
       if (history.length > 50) {
         history.splice(50);
       }
-      
       localStorage.setItem('plantIdentificationHistory', JSON.stringify(history));
-
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An error occurred';
       setError(errorMessage);
@@ -83,9 +76,17 @@ export default function IdentificationWizard() {
       setCollectionMessage('This species is already in your collection.');
       return;
     }
-    collections.unshift({ ...result, imageUrl: previewUrl || '', timestamp: new Date().toISOString() });
+    collections.unshift({ ...result, imageUrl: uploadedImageUrl || '', timestamp: new Date().toISOString() });
     localStorage.setItem('plantCollections', JSON.stringify(collections));
     setCollectionMessage('Added to your collection!');
+    setTimeout(() => {
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setResult(null);
+      setError(null);
+      setIsLoading(false);
+      setUploadedImageUrl(null);
+    }, 1000);
   };
 
   return (
@@ -150,24 +151,26 @@ export default function IdentificationWizard() {
           )}
         </div>
 
-        <button
-          type="submit"
-          disabled={!selectedFile || isLoading}
-          style={{
-            backgroundColor: selectedFile && !isLoading ? '#4299e1' : '#cbd5e0',
-            color: 'white',
-            padding: '0.75rem 1.5rem',
-            border: 'none',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            fontWeight: 600,
-            cursor: selectedFile && !isLoading ? 'pointer' : 'not-allowed',
-            transition: 'all 0.2s ease',
-            transform: selectedFile && !isLoading ? 'none' : 'none'
-          }}
-        >
-          {isLoading ? 'Identifying...' : 'Identify Plant'}
-        </button>
+        {!collectionMessage && (
+          <button
+            type="submit"
+            disabled={!selectedFile || isLoading}
+            style={{
+              backgroundColor: selectedFile && !isLoading ? '#4299e1' : '#cbd5e0',
+              color: 'white',
+              padding: '0.75rem 1.5rem',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '1rem',
+              fontWeight: 600,
+              cursor: selectedFile && !isLoading ? 'pointer' : 'not-allowed',
+              transition: 'all 0.2s ease',
+              transform: selectedFile && !isLoading ? 'none' : 'none'
+            }}
+          >
+            {isLoading ? 'Identifying...' : 'Identify Plant'}
+          </button>
+        )}
       </form>
 
       {error && (
@@ -183,7 +186,7 @@ export default function IdentificationWizard() {
         </div>
       )}
 
-      {result && (
+      {result && !collectionMessage && (
         <div style={{ marginTop: '2rem', padding: '1.5rem', backgroundColor: '#f7fafc', borderRadius: '8px' }}>
           <h3 style={{ fontSize: '1.25rem', fontWeight: 600, color: '#2d3748', marginBottom: '1rem' }}>
             Identification Result
@@ -258,8 +261,29 @@ export default function IdentificationWizard() {
             >
               Add to Collection
             </button>
-            {collectionMessage && <div style={{ color: '#225ea8', marginTop: 8 }}>{collectionMessage}</div>}
           </div>
+        </div>
+      )}
+
+      {collectionMessage && (
+        <div style={{ textAlign: 'center', marginTop: 24 }}>
+          <div style={{ color: '#225ea8', marginBottom: 12 }}>{collectionMessage}</div>
+          <a
+            href="/collections"
+            style={{
+              display: 'inline-block',
+              marginTop: 12,
+              background: '#4299e1',
+              color: 'white',
+              padding: '0.7rem 1.5rem',
+              borderRadius: '8px',
+              fontWeight: 600,
+              textDecoration: 'none',
+              transition: 'background 0.2s',
+            }}
+          >
+            View Collections
+          </a>
         </div>
       )}
     </div>
