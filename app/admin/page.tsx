@@ -242,7 +242,9 @@ export default function AdminPage() {
         />
         {selectedImageName && <div style={{ color: '#225ea8', marginBottom: 8, fontSize: '0.98rem' }}>Selected: {selectedImageName}</div>}
         {uploading && <div style={{ color: '#3182ce', marginBottom: 8 }}>Uploading...</div>}
-        {form.image_url && <Image src={form.image_url} alt="Preview" width={240} height={240} style={{ width: '100%', maxWidth: 240, borderRadius: 8, marginBottom: 12, marginTop: 8, objectFit: 'cover', display: 'block' }} />}
+        {/^(https?:)?\/\//.test(form.image_url || '') && (
+          <Image src={form.image_url!} alt="Preview" width={240} height={240} style={{ width: '100%', maxWidth: 240, borderRadius: 8, marginBottom: 12, marginTop: 8, objectFit: 'cover', display: 'block' }} />
+        )}
       </form>
       {error && <div style={errorStyle}>{error}</div>}
       <div style={{ width: '100%', marginTop: 24 }}>
@@ -272,7 +274,9 @@ export default function AdminPage() {
                     <td style={{ padding: '0.7rem' }}>{sp.fruit_type}</td>
                     <td style={{ padding: '0.7rem' }}>{sp.growth_habit}</td>
                     <td style={{ padding: '0.7rem' }}>
-                      {sp.image_url && <Image src={sp.image_url} alt="Species" width={60} height={60} style={{ maxWidth: 60, borderRadius: 6 }} />}
+                      {/^(https?:)?\/\//.test(sp.image_url || '') && (
+                        <Image src={sp.image_url!} alt="Species" width={60} height={60} style={{ maxWidth: 60, borderRadius: 6 }} />
+                      )}
                     </td>
                     <td style={{ padding: '0.7rem' }}>
                       <button onClick={() => handleDelete(sp._id)} style={{ ...btnStyle, background: '#e53e3e', color: '#fff', margin: 0, padding: '0.5rem 1rem' }}>Delete</button>

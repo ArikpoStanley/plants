@@ -37,23 +37,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  const apiKey = process.env.PLANTNET_API_KEY;
+  if (!apiKey) {
+    return res.status(500).json({ error: 'PlantNet API key is not set in environment variables.' });
+  }
+
   try {
-    const { image_url } = req.body;
+    const imageToSend = "https://upload.wikimedia.org/wikipedia/commons/3/36/Hopetoun_falls.jpg";
 
-    if (!image_url) {
-      return res.status(400).json({ error: 'Image URL is required' });
-    }
+    // 👇 Construct a proper GET URL with query parameters
+    const params = new URLSearchParams({
+      'images': imageToSend,
+      'organs': 'leaf',
+      'api-key': apiKey,
+    });
 
-    const response = await fetch('https://my-api.plantnet.org/v2/identify/all', {
-      method: 'POST',
+    const url = `https://my-api.plantnet.org/v2/identify/all?${params.toString()}`;
+
+    console.log('PlantNet request (GET):', url);
+
+    const response = await fetch(url, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
-        'Api-Key': process.env.PLANTNET_API_KEY || '',
+        'Accept': 'application/json',
       },
-      body: JSON.stringify({
-        images: [image_url],
-        organs: ['leaf', 'bark']
-      }),
     });
 
     if (!response.ok) {
@@ -62,7 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const data: PlantNetResponse = await response.json();
-    
+
     if (!data.results || data.results.length === 0) {
       return res.status(404).json({ error: 'No species found' });
     }
@@ -87,4 +94,4 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const errorMessage = error instanceof Error ? error.message : 'PlantNet API error';
     res.status(500).json({ error: errorMessage });
   }
-} 
+}

@@ -10,9 +10,11 @@ interface HistoryItem extends PlantNetResult {
 
 export default function IdentificationWizard() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PlantNetResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [collectionMessage, setCollectionMessage] = useState<string | null>(null);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -20,6 +22,9 @@ export default function IdentificationWizard() {
       setSelectedFile(file);
       setError(null);
       setResult(null);
+      // Create a preview URL
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
     }
   };
 
@@ -66,6 +71,20 @@ export default function IdentificationWizard() {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleAddToCollection = () => {
+    if (!result) return;
+    const collectionsRaw = localStorage.getItem('plantCollections');
+    let collections = collectionsRaw ? JSON.parse(collectionsRaw) : [];
+    // Prevent duplicates by scientific name
+    if (collections.some((item: any) => item.scientific_name === result.scientific_name)) {
+      setCollectionMessage('This species is already in your collection.');
+      return;
+    }
+    collections.unshift({ ...result, imageUrl: previewUrl });
+    localStorage.setItem('plantCollections', JSON.stringify(collections));
+    setCollectionMessage('Added to your collection!');
   };
 
   return (
@@ -117,6 +136,15 @@ export default function IdentificationWizard() {
               </p>
             </div>
           </div>
+          {previewUrl && (
+            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+              <img
+                src={previewUrl}
+                alt="Preview"
+                style={{ maxWidth: '100%', maxHeight: 240, borderRadius: 8, boxShadow: '0 2px 8px rgba(30, 64, 175, 0.10)' }}
+              />
+            </div>
+          )}
         </div>
 
         <button
@@ -207,6 +235,27 @@ export default function IdentificationWizard() {
                 </span>
               </div>
             )}
+          </div>
+          <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={handleAddToCollection}
+              style={{
+                backgroundColor: '#225ea8',
+                color: 'white',
+                padding: '0.7rem 1.5rem',
+                border: 'none',
+                borderRadius: '8px',
+                fontSize: '1rem',
+                fontWeight: 600,
+                cursor: 'pointer',
+                marginBottom: '0.5rem',
+                transition: 'background 0.2s',
+              }}
+            >
+              Add to Collection
+            </button>
+            {collectionMessage && <div style={{ color: '#225ea8', marginTop: 8 }}>{collectionMessage}</div>}
           </div>
         </div>
       )}

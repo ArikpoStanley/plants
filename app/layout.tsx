@@ -66,6 +66,14 @@ export default function RootLayout({
               }}>
                 History
               </Link>
+              <Link href="/collections" style={{
+                color: 'white',
+                textDecoration: 'none',
+                fontWeight: '500',
+                transition: 'opacity 0.2s'
+              }}>
+                Collections
+              </Link>
               <Link href="/admin" style={{
                 color: 'white',
                 textDecoration: 'none',
