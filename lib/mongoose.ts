@@ -6,8 +6,10 @@ if (!MONGO_URL) {
   throw new Error('Please define the MONGO_URL environment variable inside .env.local');
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 let cached = (global as any).mongoose;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 if (!cached) {
   cached = (global as any).mongoose = { conn: null, promise: null };
 }

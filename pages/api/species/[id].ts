@@ -19,7 +19,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       if (!updated) return res.status(404).json({ error: 'Species not found' });
       res.status(200).json(updated);
     } catch (err: any) {
-      res.status(400).json({ error: err.message || 'Failed to update species' });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      res.status(400).json({ error: (err as any).message || 'Failed to update species' });
     }
   } else if (req.method === 'DELETE') {
     try {

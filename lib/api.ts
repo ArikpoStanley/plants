@@ -87,6 +87,7 @@ export async function uploadImage(file: File): Promise<string> {
   return data.url;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export async function classifyImage(imageUrl: string): Promise<any> {
   const res = await fetch(`/api/classify-image`, {
     method: 'POST',

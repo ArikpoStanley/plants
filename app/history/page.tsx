@@ -85,6 +85,7 @@ export default function HistoryPage() {
                   <div><b>Synonyms:</b> {item.synonyms.join(', ')}</div>
                 )}
                 {item.vernacular_names && item.vernacular_names.length > 0 && (
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
                   <div><b>Vernacular Names:</b> {item.vernacular_names.map((v: any) => v.name).join(', ')}</div>
                 )}
                 {item.image && <img src={item.image} alt="Uploaded" style={{ maxWidth: 120, borderRadius: 8, marginTop: 8 }} />}

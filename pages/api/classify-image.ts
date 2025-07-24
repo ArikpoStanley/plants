@@ -27,6 +27,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         genus: species.genus?.scientificNameWithoutAuthor,
         synonyms: species.synonyms || [],
         vernacular_names: species.vernacularNames || [],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         images: (best.images || []).map((img: any) => img.url),
       });
     } else {

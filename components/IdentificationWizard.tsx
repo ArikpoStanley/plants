@@ -248,6 +248,7 @@ export default function IdentificationWizard() {
             <div><b>Synonyms:</b> {aiResult.synonyms.join(', ')}</div>
           )}
           {aiResult.vernacular_names && aiResult.vernacular_names.length > 0 && (
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             <div><b>Vernacular Names:</b> {aiResult.vernacular_names.map((v: any) => v.name).join(', ')}</div>
           )}
           {aiResult.images && aiResult.images.length > 0 && (

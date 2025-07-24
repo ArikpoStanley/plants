@@ -17,6 +17,7 @@ function parseForm(req: NextApiRequest): Promise<{ fields: any; files: any }> {
   return new Promise((resolve, reject) => {
     import('formidable').then(({ IncomingForm }) => {
       const form = new IncomingForm();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       form.parse(req, (err: any, fields: any, files: any) => {
         if (err) reject(err);
         else resolve({ fields, files });
@@ -32,8 +33,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { files } = await parseForm(req);
     let file = files.file;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (Array.isArray(file)) file = file[0];
     if (!file) return res.status(400).json({ error: 'No file uploaded' });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const result = await cloudinary.uploader.upload((file as any).filepath, {
       folder: 'plant-identification',
     });
