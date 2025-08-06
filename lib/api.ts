@@ -38,6 +38,46 @@ export interface PlantNetResult {
   }>;
 }
 
+export interface PlantNetFullResponse {
+  query: {
+    project?: string;
+    images: string[];
+    organs: string[];
+  };
+  language?: string;
+  preferedReferential?: string;
+  results: Array<{
+    score: number;
+    species: {
+      scientificNameWithoutAuthor: string;
+      scientificNameAuthorship: string;
+      scientificName: string;
+      genus: {
+        scientificNameWithoutAuthor: string;
+        scientificNameAuthorship: string;
+        scientificName: string;
+      };
+      family: {
+        scientificNameWithoutAuthor: string;
+        scientificNameAuthorship: string;
+        scientificName: string;
+      };
+      commonNames: string[];
+      synonyms: string[];
+      vernacularNames: string[];
+      images: Array<{
+        url: {
+          o: string;
+          m: string;
+          s: string;
+        };
+        organ: string;
+      }>;
+    };
+  }>;
+  remainingIdentificationRequests?: number;
+}
+
 export async function fetchQuestions(): Promise<Question[]> {
   const res = await fetch(`/api/questions`);
   if (!res.ok) throw new Error('Failed to fetch questions');
@@ -127,7 +167,7 @@ export async function uploadImage(file: File): Promise<{ url: string; public_id:
   return response.json();
 }
 
-export async function classifyImage(imageUrl: string): Promise<PlantNetResult> {
+export async function classifyImage(imageUrl: string): Promise<PlantNetFullResponse> {
   const response = await fetch('/api/classify-image', {
     method: 'POST',
     headers: {

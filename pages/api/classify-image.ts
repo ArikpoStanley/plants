@@ -1,37 +1,5 @@
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-interface PlantNetResponse {
-  results: Array<{
-    score: number;
-    species: {
-      scientificNameWithoutAuthor: string;
-      scientificNameAuthorship: string;
-      scientificName: string;
-      genus: {
-        scientificNameWithoutAuthor: string;
-        scientificNameAuthorship: string;
-        scientificName: string;
-      };
-      family: {
-        scientificNameWithoutAuthor: string;
-        scientificNameAuthorship: string;
-        scientificName: string;
-      };
-      commonNames: string[];
-      synonyms: string[];
-      vernacularNames: string[];
-      images: Array<{
-        url: {
-          o: string;
-          m: string;
-          s: string;
-        };
-        organ: string;
-      }>;
-    };
-  }>;
-}
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -43,12 +11,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const imageToSend = "https://upload.wikimedia.org/wikipedia/commons/3/36/Hopetoun_falls.jpg";
+    const { image_url } = req.body;
+    if (!image_url) {
+      return res.status(400).json({ error: 'Image URL is required' });
+    }
 
     // 👇 Construct a proper GET URL with query parameters
     const params = new URLSearchParams({
-      'images': imageToSend,
-      'organs': 'leaf',
+      'images': image_url,
+      'organs': 'leaf', // or allow frontend to specify
       'api-key': apiKey,
     });
 
@@ -65,30 +36,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`PlantNet API error: ${errorText}`);
+      console.log(`PlantNet API error: ${errorText}`);
     }
 
-    const data: PlantNetResponse = await response.json();
-
-    if (!data.results || data.results.length === 0) {
-      return res.status(404).json({ error: 'No species found' });
-    }
-
-    const topResult = data.results[0];
-    const species = topResult.species;
-
-    const result = {
-      scientific_name: species.scientificNameWithoutAuthor,
-      confidence: topResult.score,
-      common_names: species.commonNames || [],
-      family: species.family.scientificNameWithoutAuthor,
-      genus: species.genus.scientificNameWithoutAuthor,
-      synonyms: species.synonyms || [],
-      vernacular_names: species.vernacularNames || [],
-      reference_images: species.images || []
-    };
-
-    res.status(200).json(result);
+    const data = await response.json();
+    res.status(200).json(data); // <-- Return the full response!
   } catch (error) {
     console.error('PlantNet API error:', error);
     const errorMessage = error instanceof Error ? error.message : 'PlantNet API error';
